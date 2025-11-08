@@ -3,6 +3,14 @@
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
+  font-family: "Times New Roman", Times, serif;
+}
+
+body{
+  background-color: #f7f1fa;
+  color: #4d3b5f;
+  margin: 0;
+  padding: 0;
 }
 
 nav ul {
@@ -34,6 +42,7 @@ nav li {
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
+
 
 @keyframes logo-spin {
   from {

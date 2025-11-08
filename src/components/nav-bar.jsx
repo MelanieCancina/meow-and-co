@@ -1,91 +1,76 @@
-import { useState, useEffect } from 'react';
-import CartWidget from './cart-widget';
+import { Navbar, Nav, NavDropdown, Container } from "react-bootstrap";
+import CartWidget from "./cart-widget";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router"; 
 
 function NavBar() {
-const [menuOpen, setMenuOpen] = useState(false);
-const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [categories, setCategories] = useState([]);
+  const navigate = useNavigate(); 
+  useEffect(() => {
+    fetch("https://dummyjson.com/products/categories")
+      .then((res) => res.json())
+      .then((data) => setCategories(data))
+      .catch((err) => console.error(err));
+  }, []);
 
-const toggleMenu = () => setMenuOpen(!menuOpen);
-
-useEffect(() => {
-const handleResize = () => {
-    setIsMobile(window.innerWidth <= 768);
-    if (window.innerWidth > 768) setMenuOpen(false);
-};
-window.addEventListener('resize', handleResize);
-return () => window.removeEventListener('resize', handleResize);
-}, []);
-
-return (
-<nav style={styles.nav}>
-    <h1 style={styles.logo}>Meow & Co 🐾</h1>
-
-    {isMobile && (
-    <button onClick={toggleMenu} style={styles.burger}>☰</button>
-    )}
-
-    <ul style={styles.menu(isMobile, menuOpen)}>
-    <li><a href="#" style={styles.link}>Accesorios</a></li>
-    <li><a href="#" style={styles.link}>Camas</a></li>
-    <li><a href="#" style={styles.link}>Comederos</a></li>
-    <li><a href="#" style={styles.link}>Juguetes</a></li>
-    <li><a href="#" style={styles.link}>Contacto</a></li>
-    <li><CartWidget /></li>
-    </ul>
-</nav>
-);
+  return (
+    <Navbar style={navbarStyle} expand="lg">
+      <Container>
+        <Navbar.Brand onClick={() => navigate('/')} style={brandStyle}
+          onMouseEnter={e => e.currentTarget.style.color = "#3f1f72"}
+          onMouseLeave={e => e.currentTarget.style.color = "#5b2e91"}>
+          Meow & Co 🐱
+        </Navbar.Brand>
+        <Navbar.Toggle />
+        <Navbar.Collapse id="basic-navbar-nav">
+          <Nav className="me-auto">
+            <NavDropdown title="Categorías" id="basic-nav-dropdown" style={navLinkStyle}>
+              {categories.map(cat => (
+                <NavDropdown.Item
+                  onClick={() => navigate(`/category/${cat.slug}`)}
+                  key={cat.slug} style={dropdownStyle}
+                  onMouseEnter={e => e.currentTarget.style.backgroundColor = "#e5d0f5"}
+                  onMouseLeave={e => e.currentTarget.style.backgroundColor = "#f4eaf6"}>
+                  {cat.name}
+                </NavDropdown.Item>
+              ))}
+            </NavDropdown>
+          </Nav>
+          <CartWidget />
+        </Navbar.Collapse>
+      </Container>
+    </Navbar>
+  );
 }
 
-const styles = {
-nav: {
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fde4ec',
-    padding: '15px 60px',
-    boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    width: '95%',
-    fontFamily: '"Times New Roman"',
-    zIndex: 1000,
-  },
-logo: {
-    fontSize: '2rem',
-    color: '#b35c82',
-    fontWeight: 'bold',
-  },
-    burger: {
-    fontSize: '1.8rem',
-    background: 'none',
-    border: 'none',
-    color: '#b35c82',
-    cursor: 'pointer',
-    marginTop: '10px',
-  },
-links: {
-    listStyle: 'none',
-    display: 'flex',
-    gap: '30px',
-    alignItems: 'center',
-    margin: 0,
-    padding: 0,
-  },
-link: {
-    textDecoration: 'none',
-    color: '#b35c82',
-    fontWeight: '600',
-    transition: 'color 0.3s',
-  },
+  const navbarStyle = {
+    backgroundColor: "#e2c7f0", 
+    padding: "10px 20px",
+    fontFamily: "Times",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+  };
 
-    menu: (isMobile, menuOpen) => ({
-    ...styles.links,
-    flexDirection: isMobile ? 'column' : 'row',
-    display: isMobile && !menuOpen ? 'none' : 'flex',
-    marginTop: isMobile ? '10px' : '0',
-  }),
-};
+  const brandStyle = {
+    cursor: "pointer",
+    fontWeight: "700",
+    fontSize: "1.5rem",
+    color: "#5b2e91",
+  };
 
+  const navLinkStyle = {
+    color: "#5b2e91",
+    fontWeight: "500",
+    transition: "color 0.2s ease",
+  };
+
+  const dropdownStyle = {
+    backgroundColor: "#f4eaf6",
+    borderRadius: "3px",
+  };
+  const loaderContainerStyle = {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    height: "40vh",
+  };
 export default NavBar;
