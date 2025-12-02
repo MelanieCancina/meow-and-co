@@ -4,25 +4,11 @@ h1, h2, h3, h4 {
   font-weight: 600;
 }
 
-.product-card {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  border-radius: 12px;
+div[style*="background-color: #f4eaf6"] {
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.product-card:hover {
-  transform: scale(1.03);
-  box-shadow: 0px 6px 20px rgba(202, 127, 127, 0.868);
-}
-
-.product-img {
-  height: 200px;
-  object-fit: contain;
-}
-
-footer {
-  background-color: #212529;
-}
-
-hr {
-  border-top: 2px solid #ccc;
+div[style*="background-color: #f4eaf6"]:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.15);
 }

@@ -1,39 +1,59 @@
 import { Navbar, Nav, NavDropdown, Container } from "react-bootstrap";
 import CartWidget from "./cart-widget";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router"; 
+import { useNavigate } from "react-router";
+import { getCategories } from "../firebase/db";
 
 function NavBar() {
-  const [categories, setCategories] = useState([]);
-  const navigate = useNavigate(); 
+  const [categorias, setCategorias] = useState([]);
+  const [hovered, setHovered] = useState(null); 
+  const navigate = useNavigate();
+
   useEffect(() => {
-    fetch("https://dummyjson.com/products/categories")
-      .then((res) => res.json())
-      .then((data) => setCategories(data))
-      .catch((err) => console.error(err));
+    const loadCategories = async () => {
+      try {
+        const data = await getCategories();
+        setCategorias(data);
+      } catch (err) {
+        toast.error("Error cargando categorías:", err);
+      }
+    };
+    loadCategories();
   }, []);
 
   return (
-    <Navbar style={navbarStyle} expand="lg">
+    <Navbar expand="lg" variant="light" style={navbarStyle}>
       <Container>
-        <Navbar.Brand onClick={() => navigate('/')} style={brandStyle}
-          onMouseEnter={e => e.currentTarget.style.color = "#3f1f72"}
-          onMouseLeave={e => e.currentTarget.style.color = "#5b2e91"}>
+        <Navbar.Brand
+          onClick={() => navigate("/")}
+          style={brandStyle}>
           Meow & Co 🐱
         </Navbar.Brand>
         <Navbar.Toggle />
-        <Navbar.Collapse id="basic-navbar-nav">
+        <Navbar.Collapse>
           <Nav className="me-auto">
-            <NavDropdown title="Categorías" id="basic-nav-dropdown" style={navLinkStyle}>
-              {categories.map(cat => (
-                <NavDropdown.Item
-                  onClick={() => navigate(`/category/${cat.slug}`)}
-                  key={cat.slug} style={dropdownStyle}
-                  onMouseEnter={e => e.currentTarget.style.backgroundColor = "#e5d0f5"}
-                  onMouseLeave={e => e.currentTarget.style.backgroundColor = "#f4eaf6"}>
-                  {cat.name}
-                </NavDropdown.Item>
-              ))}
+            <NavDropdown
+              title="Categorías"
+              id="categorias-dropdown"
+              style={navLinkStyle}
+              menuVariant="light">
+              {categorias.length > 0
+                ? categorias.map((cat) => (
+                    <NavDropdown.Item
+                      key={cat.slug}
+                      onClick={() => navigate(`/category/${cat.slug}`)}
+                      onMouseEnter={() => setHovered(cat.slug)}
+                      onMouseLeave={() => setHovered(null)}
+                      style={{
+                        ...dropdownItemStyle,
+                        backgroundColor: hovered === cat.slug ? "#d4a373" : "#f4eaf6",
+                        color: hovered === cat.slug ? "white" : "black",
+                        transform: hovered === cat.slug ? "scale(1.02)" : "scale(1)",
+                      }}>
+                      {cat.name}
+                    </NavDropdown.Item>
+                  ))
+                : <NavDropdown.Item disabled style={dropdownItemStyle}>Cargando…</NavDropdown.Item>}
             </NavDropdown>
           </Nav>
           <CartWidget />
@@ -42,35 +62,33 @@ function NavBar() {
     </Navbar>
   );
 }
+const navbarStyle = {
+  backgroundColor: "#e2c7f0",
+  padding: "10px 20px",
+  fontFamily: "Times, serif",
+  boxShadow: "0 4px 10px rgba(0,0,0,0.15)",
+  zIndex: 999,
+};
 
-  const navbarStyle = {
-    backgroundColor: "#e2c7f0", 
-    padding: "10px 20px",
-    fontFamily: "Times",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
-  };
+const brandStyle = {
+  cursor: "pointer",
+  fontWeight: 700,
+  fontSize: "1.7rem",
+  color: "#5b2e91",
+  transition: "color 0.3s ease",
+};
 
-  const brandStyle = {
-    cursor: "pointer",
-    fontWeight: "700",
-    fontSize: "1.5rem",
-    color: "#5b2e91",
-  };
+const navLinkStyle = {
+  color: "#5b2e91",
+  fontWeight: 500,
+  fontSize: "1rem",
+};
 
-  const navLinkStyle = {
-    color: "#5b2e91",
-    fontWeight: "500",
-    transition: "color 0.2s ease",
-  };
+const dropdownItemStyle = {
+  borderRadius: "5px",
+  padding: "10px",
+  cursor: "pointer",
+  transition: "all 0.25s ease",
+};
 
-  const dropdownStyle = {
-    backgroundColor: "#f4eaf6",
-    borderRadius: "3px",
-  };
-  const loaderContainerStyle = {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    height: "40vh",
-  };
 export default NavBar;

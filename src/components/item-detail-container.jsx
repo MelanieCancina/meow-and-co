@@ -1,50 +1,42 @@
 import { useParams } from "react-router";
 import { useEffect, useState } from "react";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../firebase/config";
 import ItemDetail from "./item-detail";
-import { PacmanLoader } from "react-spinners";
 
 function ItemDetailContainer() {
   const { id } = useParams();
   const [item, setItem] = useState(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`https://dummyjson.com/products/${id}`)
-      .then(res => res.json())
-      .then(data => {
-        setItem(data);
-        setLoading(false);
-      })
-      .catch(err => console.error(err));
+    const fetchItem = async () => {
+      try {
+        const docRef = doc(db, "items", id);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          setItem({ id: docSnap.id, ...docSnap.data() });
+        }
+      } catch (error) {
+        console.error("Error cargando producto:", error);
+      }
+    };
+
+    fetchItem();
   }, [id]);
 
-  if (loading) {
+  if (!item) {
     return (
-      <div style={loaderContainerStyle}>
-        <PacmanLoader color="#e055b2" loading={true} size={50} />
+      <div className="skeleton-container">
+        <div className="skeleton-img"></div>
+        <div className="skeleton-title"></div>
+        <div className="skeleton-price"></div>
       </div>
     );
+    
   }
-
-  return (
-    <div style={{
-      backgroundColor: "#f4eaf6",
-      padding: "30px",
-      borderRadius: "12px",
-      boxShadow: "0 8px 20px rgba(0,0,0,0.2)",
-      maxWidth: "700px",
-      margin: "40px auto",
-    }}>
-      <ItemDetail item={item} onBack={() => window.history.back()} />
-    </div>
-  );
+  return <ItemDetail item={item} />;
 }
 
-const loaderContainerStyle = {
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-  height: "40vh",
-};
-
 export default ItemDetailContainer;
+

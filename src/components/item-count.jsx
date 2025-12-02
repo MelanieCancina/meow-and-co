@@ -1,81 +1,71 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
+import { CartContext } from "../context/cart-context";
+import { useNavigate } from "react-router";
 
-function ItemCount({ stock, initial, onAdd }) {
-  const [count, setCount] = useState(initial);
+function ItemCount({ stock, initial = 1, item }) {
+  const [count, setCount] = useState(stock > 0 ? initial : 0);
+  const [added, setAdded] = useState(false);
+  const { agregarProducto } = useContext(CartContext);
+  const navigate = useNavigate();
 
-  const increase = () => count < stock && setCount(count + 1);
-  const decrease = () => count > 1 && setCount(count - 1);
+  const increase = () => {
+    if (count < stock) setCount(count + 1);
+  };
+
+  const decrease = () => {
+    if (count > 1) setCount(count - 1);
+  };
+
+  const handleAddToCart = () => {
+    agregarProducto({ ...item, count }, stock);
+    setAdded(true);
+  };
+
+  if (added) {
+    return (
+      <div className="itemcount-container">
+        <button
+          className="itemcount-addButton"
+          onClick={() => navigate("/cart")}
+          style={{ marginTop: "15px" }}>
+          Ir al carrito 🛒
+        </button>
+      </div>
+    );
+  }
 
   return (
-    <div style={styles.container}>
-      <div style={styles.counter}>
+    <div className="itemcount-container">
+      <button className="itemcount-stock" disabled>
+        Stock: {stock}
+      </button>
+
+      <div className="itemcount-counter">
         <button
-          style={styles.button}
+          className="itemcount-button"
           onClick={decrease}
-          onMouseEnter={e => e.currentTarget.style.backgroundColor = "#cbb2e5"}
-          onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}>
+          disabled={stock === 0}>
           -
         </button>
-        <span style={styles.count}>{count}</span>
+
+        <span className="itemcount-count">{count}</span>
+
         <button
-          style={styles.button}
+          className="itemcount-button"
           onClick={increase}
-          onMouseEnter={e => e.currentTarget.style.backgroundColor = "#cbb2e5"}
-          onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}>
+          disabled={stock === 0}>
           +
         </button>
       </div>
+
       <button
-        style={styles.addButton}
-        onMouseEnter={e => e.currentTarget.style.backgroundColor = "#a88cd4"}
-        onMouseLeave={e => e.currentTarget.style.backgroundColor = "#b799de"}
-        onClick={() => onAdd(count)}>
+        className="itemcount-addButton"
+        onClick={handleAddToCart}
+        disabled={stock === 0}>
         Agregar al carrito
       </button>
     </div>
   );
 }
-
-const styles = {
-  container: { 
-    textAlign: "center", 
-    fontFamily: "'Times New Roman', Times, serif",
-    marginTop: "15px" },
-  counter: { 
-    display: "flex", 
-    justifyContent: "center", 
-    alignItems: "center", 
-    gap: "10px", 
-    marginBottom: "15px" },
-  button: {
-    border: "2px solid #a88cd4",
-    borderRadius: "8px",
-    width: "40px",
-    height: "40px",
-    fontSize: "18px",
-    fontWeight: 600,
-    backgroundColor: "transparent",
-    color: "#6e5294",
-    cursor: "pointer",
-    transition: "all 0.2s ease",
-  },
-  count: { 
-    fontSize: "1.2rem", 
-    fontWeight: 600, 
-    width: "40px", 
-    textAlign: "center", 
-    color: "#4d3b5f" },
-  addButton: {
-    backgroundColor: "#b799de",
-    color: "#fff",
-    border: "none",
-    borderRadius: "8px",
-    padding: "8px 20px",
-    fontWeight: 600,
-    fontSize: "1rem",
-    cursor: "pointer",
-    transition: "background-color 0.2s ease",
-  },
-};
 
 export default ItemCount;
